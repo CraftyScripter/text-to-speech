@@ -28,7 +28,7 @@ def get_voice():
 	if service:
 		result_service = tts.voices(service=service)
 		if result_service:
-			return jsonify({service:tts.voices(service=service)})
+			return jsonify({"status":"success",service:tts.voices(service=service)})
 		else:
 			return jsonify({"status":"failed","error":"invalid service"})
 	else:
