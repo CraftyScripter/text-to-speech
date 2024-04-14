@@ -12,16 +12,14 @@ class TextToSpeech():
 
 	def services(self):
 		self._services_ = list(self.voices_data.keys())
+		return {"status":"success","services":self._services_}
 
-		return {"services":self._services_}
-
-	def voices(self,all_voice=False,service="StreamElements"):
-
+	def voices(self,service=None,all_voice=False):
 
 		if all_voice == True:
 			return self.voices_data
 		else:
-			return self.voices_data[service]
+			return self.voices_data.get(service)
 
 
 	# def dynamic_time(self):
