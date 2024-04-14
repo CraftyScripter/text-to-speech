@@ -12,7 +12,7 @@ class TextToSpeech():
 
 	def services(self):
 		self._services_ = list(self.voices_data.keys())
-		return {"status":"success","services":self._services_}
+		return self._services_
 
 	def voices(self,service=None,all_voice=False):
 
