@@ -64,17 +64,6 @@ def get_audio_link_route():
 		error_json['status']="failed"
 		error_json["text"]="missing"
 
-
-	if _SERVICE_ not in tts.services():
-		wrong_parameter = True
-		error_json["status"] = "failed"
-		error_json["service_error"] = "Invalid service defined"
-	
-	if tts.voices(_SERVICE_):
-		wrong_parameter = True
-		error_json["status"] = "failed"
-		error_json["voice_error"] = "Invalid voice defined"
-
 	if len(error_json) != 0:
 		if wrong_parameter == False:
 			error_json["error"]="missing required parameter"
@@ -84,6 +73,12 @@ def get_audio_link_route():
 
 			
 		audio_link = tts.audio_link(service=_SERVICE_,voice=VOICE,text=TEXT)
+		if not audio_link:
+			
+			error_json["status"] = "failed"
+			error_json["error"]="Invalid parameter"
+			return error_json
+
 		return jsonify({"status":"success",'audio_url':audio_link})
 
 
