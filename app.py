@@ -2,7 +2,8 @@ from flask import Flask, jsonify, render_template, request
 from methods import *
 
 app = Flask(__name__)
-
+# app.config['JSON_SORT_KEYS'] = False
+app.json.sort_keys = False
 tts = TextToSpeech()
 
 
@@ -18,29 +19,58 @@ def get_services_route():
 	return jsonify(_SERVICES_)
 
 # Route for getVoices
-@app.route('/getVoices', methods=['GET'])
-def get_voices_route():
-	default_service = "StreamElements"
-	default_all_voice = False
-	all_voice = request.args.get('allVoice', default=default_all_voice, type=bool)
-	service = request.args.get('service', default=default_service, type=str)
-	
-	voices = tts.voices(all_voice=all_voice, service=service)
-	if all_voice:
-		return jsonify(voices)
-	return jsonify({service:voices})
+@app.route('/getVoice', methods=['GET'])
+def get_voice():
+	# default_service = "StreamElements"
+	# default_all_voice = False
+	# all_voice = request.args.get('allVoice', default=default_all_voice, type=bool)
+	service = request.args.get('service', default=None,type=str)
+	if service:
+		result_service = tts.voices(service=service)
+		if result_service:
+			return jsonify({service:tts.voices(service=service)})
+		else:
+			return jsonify({"status":"failed","error":"invalid service"})
+	else:
+		return jsonify({"status":"failed","error":"missing required parameter"})
+	# return jsonify({service:_voices_})
+
+@app.route('/getAllVoice',methods=['GET'])
+def get_all_voice():
+	_voices_ = tts.voices(all_voice=True)
+	return jsonify({"status":"success","voices":_voices_})
+
 
 # Route for getAudioLink
 @app.route('/getAudioLink', methods=['GET'])
 def get_audio_link_route():
-	default_text = "This is default text, which is converted to audio using Express Voice"
-	default_service = "StreamElements"
-	default_voice = "Brian"
-	_SERVICES_ = request.args.get('service',default=default_service,type=str)
-	VOICE = request.args.get('voice',default=default_voice,type=str).split()[0]
-	TEXT = request.args.get('text',default=default_text,type=str)
-	audio_link = tts.audio_link(service=_SERVICES_,voice=VOICE,text=TEXT)
-	return jsonify({'audio_url':audio_link})
+	# default_text = "This is default text, which is converted to audio using Express Voice"
+	# default_service = "StreamElements"
+	# default_voice = "Brian"
+	_SERVICE_ = request.args.get('service',type=str)
+	VOICE = request.args.get('voice',type=str)
+	TEXT = request.args.get('text',type=str)
+	error_json = {}
+
+	if _SERVICE_ == None:
+		error_json['status']="failed"
+		error_json["service"]="missing"
+	if VOICE == None:
+		error_json['status']="failed"
+		error_json["voice"]="missing"
+	else:
+		VOICE = VOICE.split()[0]
+	if TEXT == None:
+		error_json['status']="failed"
+		error_json["text"]="missing"
+	if len(error_json) != 0:
+		
+		error_json["error"]="missing required parameter"
+		return jsonify(error_json)
+	
+	else:
+		audio_link = tts.audio_link(service=_SERVICE_,voice=VOICE,text=TEXT)
+		return jsonify({"status":"success",'audio_url':audio_link})
 
 
 if __name__ == "__main__":
