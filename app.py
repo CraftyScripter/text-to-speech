@@ -16,7 +16,7 @@ def home():
 @app.route('/getServices', methods=['GET'])
 def get_services_route():
 	_SERVICES_ = tts.services()
-	return jsonify(_SERVICES_)
+	return jsonify({"status":"success","services":_SERVICES_})
 
 # Route for getVoices
 @app.route('/getVoice', methods=['GET'])
@@ -51,7 +51,7 @@ def get_audio_link_route():
 	VOICE = request.args.get('voice',type=str)
 	TEXT = request.args.get('text',type=str)
 	error_json = {}
-
+	wrong_parameter = False
 	if _SERVICE_ == None:
 		error_json['status']="failed"
 		error_json["service"]="missing"
@@ -63,12 +63,26 @@ def get_audio_link_route():
 	if TEXT == None:
 		error_json['status']="failed"
 		error_json["text"]="missing"
+
+
+	if _SERVICE_ not in tts.services():
+		wrong_parameter = True
+		error_json["status"] = "failed"
+		error_json["service_error"] = "Invalid service defined"
+	
+	if tts.voices(_SERVICE_):
+		wrong_parameter = True
+		error_json["status"] = "failed"
+		error_json["voice_error"] = "Invalid voice defined"
+
 	if len(error_json) != 0:
-		
-		error_json["error"]="missing required parameter"
+		if wrong_parameter == False:
+			error_json["error"]="missing required parameter"
 		return jsonify(error_json)
 	
 	else:
+
+			
 		audio_link = tts.audio_link(service=_SERVICE_,voice=VOICE,text=TEXT)
 		return jsonify({"status":"success",'audio_url':audio_link})
 
